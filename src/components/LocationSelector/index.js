@@ -1,12 +1,22 @@
 import {Alert, Button, StyleSheet, Text, View} from 'react-native';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
 import {COLORS} from '../../constants';
 import Geolocation from '@react-native-community/geolocation';
 import MapPreview from '../MapPreview/index';
+import {useRoute} from '@react-navigation/native';
 
-const LocationSelector = ({onLocation}) => {
+const LocationSelector = ({onLocation, onMapLocation}) => {
   const [pickedLocation, setPickedLocation] = useState('');
+  const route = useRoute();
+  const mapLocation = route?.params?.mapLocation;
+
+  useEffect(() => {
+    if (mapLocation) {
+      setPickedLocation(mapLocation);
+      onLocation(mapLocation);
+    }
+  }, [mapLocation]);
 
   const handleGetLocation = () => {
     Geolocation.getCurrentPosition(
@@ -40,16 +50,34 @@ const LocationSelector = ({onLocation}) => {
     );
   };
 
+  const handlePickOnMap = () => {
+    onMapLocation();
+  };
+
   return (
     <View style={styles.container}>
+      {/* <View style={styles.preview}>
+                {pickedLocation ? 
+                    <Text>{pickedLocation.latitude}, {pickedLocation.longitude}</Text> :
+                    <Text>No hay una ubicación seleccionada</Text>
+                    
+                }
+            </View> */}
       <MapPreview location={pickedLocation} style={styles.preview}>
         <Text>No hay una ubicación seleccionada</Text>
       </MapPreview>
-      <Button
-        title="Seleccionar ubicación"
-        color={COLORS.PEACH_PUFF}
-        onPress={handleGetLocation}
-      />
+      <View style={styles.action}>
+        <Button
+          title="Seleccionar ubicación"
+          color={COLORS.PEACH_PUFF}
+          onPress={handleGetLocation}
+        />
+        <Button
+          title="Elegir del mapa"
+          color={COLORS.LIGTH_PINK}
+          onPress={handlePickOnMap}
+        />
+      </View>
     </View>
   );
 };
@@ -66,6 +94,10 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     borderColor: COLORS.BLUSH,
     borderWidth: 1,
+  },
+  action: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
 });
 
